@@ -37,7 +37,7 @@ function parse(data) {
 	var last = data[0][0];
 
 	data.forEach(e => {
-		time.push(e[0] * 1000);
+		time.push(e[0]);
 		water.push(e[1]);
 		delta.push(e[0] - last);
 		last = e[0];

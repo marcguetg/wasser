@@ -37,9 +37,9 @@ def connect(wlan_credentials):
 		time.sleep(1)
 
 
-ADC_PIN = 39 # ADC2
+ADC_PIN = 28 # ADC2
 
-if __name__ == '__main__':
+def main():
 	addr = open('secrets/gs_url').read()
 	wlan_credentials = open('secrets/wlan_credentials').read()
 	connect(wlan_credentials)
@@ -55,4 +55,6 @@ if __name__ == '__main__':
 		send_data(addr, raw, waterline, '')
 
 		time.sleep(config['measurement_delay'])
-		print('.', end='', flush=True)
+
+if __name__ == '__main__':
+	main()

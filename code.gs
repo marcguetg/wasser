@@ -9,7 +9,7 @@ function getConfig() {
 function pushData(data) {
   const spreadsheet = SpreadsheetApp.getActive();
   const data_sheet = spreadsheet.getSheetByName('Data');
-  data_sheet.appendRow([Date.now() / 1000, data.waterline, data.raw, data.txt]);
+  data_sheet.appendRow([Date.now() / 1000, data.waterline, data.raw, new Date(), data.txt]);
 
   const config_sheet = spreadsheet.getSheetByName('Config');
   const alarm_threshold = config_sheet.getRange('A2').getValue();
