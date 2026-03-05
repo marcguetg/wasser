@@ -127,7 +127,37 @@ function formatDuration(sec) {
 }
 
 const width = Math.min(window.innerWidth - 30, 500);
-function create_plot_opts(title, series){
+function create_plot_opts(title, series, y_time){
+	let axes = [
+			{
+			space: 40,
+			incrs: [
+				// minute divisors (# of secs)
+				1, 5, 10, 15, 30,
+				// hour divisors
+				60, 60 * 5, 60 * 10, 60 * 15, 60 * 30,
+				// day divisors
+				3600, 3600 * 6, 3600 * 24,
+				// week divisor
+				3600 * 24 * 7,
+			],
+			values: [
+			// tick incr          default           year                             month    day                        hour     min                sec       mode
+				[3600 * 24 * 365,   "{YYYY}",         null,                            null,    null,                      null,    null,              null,        1],
+				[3600 * 24 * 28,    "{MMM}",          "\n{YYYY}",                      null,    null,                      null,    null,              null,        1],
+				[3600 * 24,         "{D}.{M}",        "\n{YYYY}",                      null,    null,                      null,    null,              null,        1],
+				[3600,              "{H}",		      "\n{D}.{M}.{YY}",                null,    "\n{D}.{M}",               null,    null,              null,        1],
+				[60,                "{H}:{mm}",       "\n{D}.{M}.{YY}",                null,    "\n{D}.{M}",               null,    null,              null,        1],
+				[1,                 ":{ss}",          "\n{D}.{M}.{YY} {H}:{mm}",       null,    "\n{D}.{M} {H}:{mm}",      null,    "\n{H}:{mm}",      null,        1],
+				[0.001,             ":{ss}.{fff}",    "\n{D}.{M}.{YY} {H}:{mm}",       null,    "\n{D}.{M} {H}:{mm}",      null,    "\n{H}:{mm}",      null,        1],
+			]
+		}
+	]
+
+	if (y_time) {
+		axes.push({values: (u, vals) => vals.map(formatDuration)});
+	}
+
 	return {
 		id: "chart1",
 		class: "my-chart",
@@ -158,52 +188,26 @@ function create_plot_opts(title, series){
 			}
 			]
 		},
-		axes: [
-			{
-			space: 40,
-			incrs: [
-				// minute divisors (# of secs)
-				1, 5, 10, 15, 30,
-				// hour divisors
-				60, 60 * 5, 60 * 10, 60 * 15, 60 * 30,
-				// day divisors
-				3600, 3600 * 6, 3600 * 24,
-				// week divisor
-				3600 * 24 * 7,
-			],
-			values: [
-			// tick incr          default           year                             month    day                        hour     min                sec       mode
-				[3600 * 24 * 365,   "{YYYY}",         null,                            null,    null,                      null,    null,              null,        1],
-				[3600 * 24 * 28,    "{MMM}",          "\n{YYYY}",                      null,    null,                      null,    null,              null,        1],
-				[3600 * 24,         "{D}.{M}",        "\n{YYYY}",                      null,    null,                      null,    null,              null,        1],
-				[3600,              "{H}",		      "\n{D}.{M}.{YY}",                null,    "\n{D}.{M}",               null,    null,              null,        1],
-				[60,                "{H}:{mm}",       "\n{D}.{M}.{YY}",                null,    "\n{D}.{M}",               null,    null,              null,        1],
-				[1,                 ":{ss}",          "\n{D}.{M}.{YY} {H}:{mm}",       null,    "\n{D}.{M} {H}:{mm}",      null,    "\n{H}:{mm}",      null,        1],
-				[0.001,             ":{ss}.{fff}",    "\n{D}.{M}.{YY} {H}:{mm}",       null,    "\n{D}.{M} {H}:{mm}",      null,    "\n{H}:{mm}",      null,        1],
-			],
-			}, {
-				values: (u, vals) => vals.map(formatDuration)
-			}
-		],
+		axes: axes,
 	};
 }
 
 
 function draw_plots(water_line, pump_interval, data_interval) {
 	PLOTS.push(new uPlot(
-		create_plot_opts('Wasserlevel', 'mm'),
+		create_plot_opts('Wasserlevel', 'mm', false),
 		water_line,
 		document.getElementById('Wasser')
 	));
 
 	PLOTS.push(new uPlot(
-		create_plot_opts('Pumpinterval', 'h:mm'),
+		create_plot_opts('Pumpinterval', 'h:mm', true),
 		pump_interval,
 		document.getElementById('Pumpinterval')
 	));
 	
 	PLOTS.push(new uPlot(
-		create_plot_opts('Messinterval', 's'),
+		create_plot_opts('Messinterval', 's', false),
 		data_interval,
 		document.getElementById('Messinterval')
 	));
