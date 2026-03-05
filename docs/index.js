@@ -2,7 +2,7 @@
 if(typeof console === undefined) {
 	var console = {log: function() {}};
 }
-var FAKE = true;
+var FAKE = false;
 var THRESHOLD = -3;
 
 function setup_gs_url() {
@@ -32,7 +32,7 @@ function load_data(url) {
 					.then(
 						data => {
 							console.log(data)
-							localStorage.setItem('Buffer', JSON.stringify(data));
+							//localStorage.setItem('Buffer', JSON.stringify(data));
 							parse(data);
 						},
 						err => console.log(err)
