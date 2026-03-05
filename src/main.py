@@ -21,9 +21,16 @@ def get_config(addr):
 	return json.loads(raw)
 
 
-def send_data(addr, raw, waterline, txt):
-	resp = urequests.get(f'{addr}?type=pushData&raw={raw}&waterline={waterline}&txt={txt}').text
-	print(resp)
+def send_data(addr, raw, waterline, txt, timeout):
+	while True:
+		try:
+			resp = urequests.get(
+				f'{addr}?type=pushData&raw={raw}&waterline={waterline}&txt={txt}',
+				timeout=timeout
+			).text
+			break
+		except OSError:
+			print('timeout')
 
 
 def connect(wlan_credentials):
@@ -40,21 +47,27 @@ def connect(wlan_credentials):
 ADC_PIN = 28 # ADC2
 
 def main():
-	addr = open('secrets/gs_url').read()
-	wlan_credentials = open('secrets/wlan_credentials').read()
+	addr = open('gs_url').read()
+	wlan_credentials = open('wlan').read()
 	connect(wlan_credentials)
 	config = get_config(addr)
+	n_average = config['average']
+	
+	store = [i for i in range(n_average)]
 	
 
 	adc = machine.ADC(ADC_PIN)
-	send_data(addr, '', '', 'startup')
+	send_data(addr, '', '', 'startup', config['timeout'])
 
 	while True:
-		raw = adc.read_u16()
-		waterline = int((raw + config['conversion']['offset']) * config['conversion']['linear'])
-		send_data(addr, raw, waterline, '')
-
-		time.sleep(config['measurement_delay'])
+		for i in range(n_average):
+			store[i] = adc.read_u16()
+			time.sleep(1)
+        
+		raw = sorted(store)[n_average // 2]
+		waterline = int(raw * config['conversion']['linear'] + config['conversion']['offset'])
+		send_data(addr, raw, waterline, '', config['timeout'])
 
 if __name__ == '__main__':
 	main()
+

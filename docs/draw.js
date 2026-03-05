@@ -1,6 +1,5 @@
 // taken from the example at https://leeoniya.github.io/uPlot/demos/zoom-touch.html
-var WATER_PLOT;
-var INTERVAL_PLOT;
+var PLOTS = [];
 
 function touchZoomPlugin(opts) {
 	function init(u, opts, data) {
@@ -121,6 +120,12 @@ function touchZoomPlugin(opts) {
 	};
 }
 
+function formatDuration(sec) {
+  const h = Math.floor(sec / 3600);
+  const m = Math.floor((sec % 3600) / 60);
+  return `${h}:${String(m).padStart(2, "0")}`;
+}
+
 const width = Math.min(window.innerWidth - 30, 500);
 function create_plot_opts(title, series){
 	return {
@@ -148,8 +153,7 @@ function create_plot_opts(title, series){
 					let min = u.scales.x.min;
 					let max = u.scales.x.max;
 
-					WATER_PLOT.setScale('x', {min, max});
-					INTERVAL_PLOT.setScale('x', {min, max});
+					PLOTS.forEach(p => p.setScale('x', {min, max}));
 				}
 			}
 			]
@@ -177,13 +181,30 @@ function create_plot_opts(title, series){
 				[1,                 ":{ss}",          "\n{D}.{M}.{YY} {H}:{mm}",       null,    "\n{D}.{M} {H}:{mm}",      null,    "\n{H}:{mm}",      null,        1],
 				[0.001,             ":{ss}.{fff}",    "\n{D}.{M}.{YY} {H}:{mm}",       null,    "\n{D}.{M} {H}:{mm}",      null,    "\n{H}:{mm}",      null,        1],
 			],
-			},
+			}, {
+				values: (u, vals) => vals.map(formatDuration)
+			}
 		],
 	};
 }
 
 
-function draw_plots(time, water, delay) {
-	WATER_PLOT = new uPlot(create_plot_opts('Wasserlevel', 'mm'), [time, water], document.getElementById('Wasser'));
-	INTERVAL_PLOT = new uPlot(create_plot_opts('Abtastintervall', 's'), [time, delay], document.getElementById('Abtastintervall'));
+function draw_plots(water_line, pump_interval, data_interval) {
+	PLOTS.push(new uPlot(
+		create_plot_opts('Wasserlevel', 'mm'),
+		water_line,
+		document.getElementById('Wasser')
+	));
+
+	PLOTS.push(new uPlot(
+		create_plot_opts('Pumpinterval', 'h:mm'),
+		pump_interval,
+		document.getElementById('Pumpinterval')
+	));
+	
+	PLOTS.push(new uPlot(
+		create_plot_opts('Messinterval', 's'),
+		data_interval,
+		document.getElementById('Messinterval')
+	));
 }
