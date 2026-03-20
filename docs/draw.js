@@ -193,12 +193,20 @@ function create_plot_opts(title, series, y_time){
 }
 
 
-function draw_plots(water_line, pump_interval, data_interval) {
+function draw_plots(water_line, pump_interval, data_interval, nf) {
 	PLOTS.push(new uPlot(
 		create_plot_opts('Wasserlevel', 'mm', false),
 		water_line,
 		document.getElementById('Wasser')
 	));
+
+	if (DEBUG) {
+		PLOTS.push(new uPlot(
+			create_plot_opts('Peaks', '', false),
+			nf,
+			document.getElementById('Peaks')
+		));
+	}
 
 	PLOTS.push(new uPlot(
 		create_plot_opts('Pumpinterval', 'h:mm', true),

@@ -2,8 +2,12 @@
 if(typeof console === undefined) {
 	var console = {log: function() {}};
 }
-var FAKE = false;
-var THRESHOLD = -3;
+const DEBUG =
+  window.location.hostname === "localhost" || 
+  window.location.hostname === "127.0.0.1" || 
+  window.location.hostname === "[::1]";
+const LOCAL_READ = true;
+const THRESHOLD = -1.5;
 
 function setup_gs_url() {
 	const gs_url_input = document.getElementById('gs_url_input');
@@ -21,7 +25,7 @@ function setup_gs_url() {
 }
 
 function load_data(url) {
-	if (FAKE) {
+	if (DEBUG && LOCAL_READ) {
 		let data = localStorage.getItem('Buffer');
 		console.log(data);
 		parse(JSON.parse(data));
@@ -32,7 +36,9 @@ function load_data(url) {
 					.then(
 						data => {
 							console.log(data)
-							//localStorage.setItem('Buffer', JSON.stringify(data));
+							if (DEBUG) {
+								localStorage.setItem('Buffer', JSON.stringify(data));
+							}
 							parse(data);
 						},
 						err => console.log(err)
@@ -79,7 +85,7 @@ function peak_finder(t, water) {
 		}
 	});
 
-	return peaks;
+	return [peaks, nf];
 }
 
 
@@ -106,12 +112,13 @@ function parse(data) {
 		water[i] = e[1];
 	});
 
-	let peaks = peak_finder(time, water);
+	let [peaks, nf] = peak_finder(time, water);
 
 	draw_plots(
 		[time, water],
 		[peaks.slice(1), diff(peaks)],
 		[time.slice(1), diff(time)],
+		[time.slice(1), nf],
 	);
 }
 
