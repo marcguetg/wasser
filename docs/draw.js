@@ -200,13 +200,11 @@ function draw_plots(water_line, pump_interval, data_interval, nf) {
 		document.getElementById('Wasser')
 	));
 
-	if (DEBUG) {
-		PLOTS.push(new uPlot(
-			create_plot_opts('Peaks', '', false),
-			nf,
-			document.getElementById('Peaks')
-		));
-	}
+	PLOTS.push(new uPlot(
+		create_plot_opts('Peaks', '', false),
+		nf,
+		document.getElementById('Peaks')
+	));
 
 	PLOTS.push(new uPlot(
 		create_plot_opts('Pumpinterval', 'h:mm', true),

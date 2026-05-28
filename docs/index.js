@@ -2,12 +2,9 @@
 if(typeof console === undefined) {
 	var console = {log: function() {}};
 }
-const DEBUG =
-  window.location.hostname === "localhost" || 
-  window.location.hostname === "127.0.0.1" || 
-  window.location.hostname === "[::1]";
-const LOCAL_READ = true;
+
 const THRESHOLD = -1.5;
+const gs_url = setup_gs_url();
 
 function setup_gs_url() {
 	const gs_url_input = document.getElementById('gs_url_input');
@@ -25,27 +22,36 @@ function setup_gs_url() {
 }
 
 function load_data(url) {
-	if (DEBUG && LOCAL_READ) {
-		let data = localStorage.getItem('Buffer');
-		console.log(data);
-		parse(JSON.parse(data));
-	} else {
-		fetch(`${url}?type=getData`)
-			.then(
-				resp => resp.json()
-					.then(
-						data => {
-							console.log(data)
-							if (DEBUG) {
-								localStorage.setItem('Buffer', JSON.stringify(data));
-							}
-							parse(data);
-						},
-						err => console.log(err)
-					)
-			);
-	}
+	fetch(url, {
+		method: 'GET',
+		mode: 'cors',
+		cache: 'default',
+	})
+		.then(r => r.text())
+		.then(base64 => {
+			console.log('done loading');
+			const binary = atob(base64);
+			const buffer = new Uint8Array(binary.length);
+
+			for (let i = 0; i < binary.length; i++) {
+				buffer[i] = binary.charCodeAt(i);
+			}
+
+			const view = new DataView(buffer.buffer);
+			const result = [];
+
+			for (let i = 0; i < buffer.length; i += 6) {
+				const a = view.getUint32(i);
+				const b = view.getUint16(i + 4);
+
+				result.push([a, b]);
+			}
+
+			console.log(`Data size ${result.length}`)
+			parse(result);
+		});
 }
+
 
 function normalizeZScore(arr) {
 	// mean
@@ -91,7 +97,6 @@ function peak_finder(t, water) {
 
 function diff(arr) {
   const n = arr.length;
-  console.log(n);
   const out = new Float64Array(n - 1);
 
   for (let i = 0; i < n - 1; i++) {
@@ -122,11 +127,16 @@ function parse(data) {
 	);
 }
 
-function main() {
-	const gs_url = setup_gs_url();
+
+function load_all() {
 	console.log('fetching...');
-	const data = load_data(gs_url);
-	console.log('done loading');
+	load_data(`${gs_url}?type=getBinary`);
+}
+
+
+function main() {
+	console.log('fetching...');
+	const data = load_data(`${gs_url}?type=getLastBinary`);
 }
 
 main();
